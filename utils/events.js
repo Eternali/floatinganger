@@ -44,6 +44,7 @@ class MouseButton {
 class EventHandler {
 
   constructor(preventDefaults = true) {
+    this.constraints = new THREE.Vector2();
     this.preventDefaults = preventDefaults;
     this.keyboard = {  };
     this.mouse = {
@@ -61,6 +62,8 @@ class EventHandler {
   }
 
   bind(window, loader) {
+    this.constraints.set(window.innerWidth, window.innerHeight);
+
     window.addEventListener('keydown', this.onKeyDown.bind(this));
     window.addEventListener('keyup', this.onKeyUp.bind(this));
     window.addEventListener('mousedown', this.onMouseDown.bind(this));
@@ -125,8 +128,8 @@ class EventHandler {
   onMouseMove(event) {
     if (this.mouse.onMove === null) return;
     this.consumeEvent(event);
-    this.mouse.pos.x = event.clientX;
-    this.mouse.pos.y = event.clientY;
+    this.mouse.pos.x = (event.clientX / this.constraints.x) * 2 - 1;
+    this.mouse.pos.y = (event.clientY / this.constraints.y) * 2 + 1;
     this.mouse.onMove(this.mouse.pos);
   }
 

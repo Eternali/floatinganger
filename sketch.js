@@ -7,7 +7,7 @@ const eventHandler = new EventHandler();
 const manager = new GameManager(
   clock = new THREE.Clock(),
   loadingManager = new THREE.LoadingManager(),
-  renderer = new THREE.WebGLRenderer(),
+  renderer = new THREE.WebGLRenderer({ antialias: true }),
   scene = new THREE.Scene()
 );
 
@@ -35,7 +35,6 @@ const player1 = new Player({
     fire: 68,
     look: 'mousemove',
   },
-  dir: new THREE.Vector3(0, 0, 0),
 });
 const player2 = new Player({
   color: 0x0000ff,
@@ -44,7 +43,6 @@ const player2 = new Player({
     fire: 39,
     // look: 'mousemove',
   },
-  dir: new THREE.Vector3(0, 0, 0),
 });
 
 function setup() {
@@ -58,11 +56,13 @@ function setup() {
   // spawn players
   player1.spawn({
     pos: new THREE.Vector3(10, 10, 10),
+    dir: new THREE.Vector3(0, Math.PI / 4, 0),
     scene: manager.scene,
     dims: viewPort,
   });
   player2.spawn({
-    pos: new THREE.Vector3(-10, 10, -10),
+    pos: new THREE.Vector3(0, 0, 0),
+    dir: new THREE.Vector3(Math.PI / 4, Math.PI / 4, 0),
     scene: manager.scene,
     dims: viewPort,
   });
@@ -82,7 +82,7 @@ function draw() {
   player1.update();
   player2.update();
 
-  manager.render(player1.camera);
+  manager.render(player2.camera);
 }
 
 eventHandler.bind(window, setup);
