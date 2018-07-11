@@ -8,9 +8,9 @@ class GameManager {
     this.loaders = {  };
   }
 
-  init(size) {
+  init(dims) {
     this.loaders.textures = new THREE.TextureLoader(this.loadingManager);
-    this.renderer.setSize(size.x, size.y);
+    this.renderer.setSize(dims.width, dims.height);
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.BasicShadowMap;
   }
