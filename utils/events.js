@@ -49,7 +49,7 @@ class EventHandler {
     this.keyboard = {  };
     this.mouse = {
       // keep a history of the last 4 mouse positions
-      pos: new Array(4).map((_) => new THREE.Vector2(0, 0)),
+      pos: Array(4).fill(new THREE.Vector2(0, 0)),
       keys: {  },
       onMove: null,
     };

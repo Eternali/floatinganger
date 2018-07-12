@@ -20,6 +20,62 @@ let angleFromMouse = (mouse, sensitivity) => new THREE.Vector3(
   mouse.x * Math.abs(mouse.y) * Math.PI * sensitivity.z,
 );
 
+class Tail {
+
+  constructor({
+    head,
+    length,
+    fidelity,
+  }) {
+    this.head = head;
+    this.length = length;
+    this.fidelity = fidelity;
+  }
+
+  init() {  }
+  update(env) {  }
+
+}
+
+class BaseTail extends Tail {
+
+  constructor({
+    head,
+    length,
+    fidelity
+  }) {
+    super({ head, length, fidelity });
+    this.children = [...Array(this.fidelity)].map((_) => this.head.clone());
+    this.children.forEach((body, b, arr) => {
+      body.material.transparent = true;
+      // body.material.opacity = 1 - (b / arr);
+      body.scale.set(
+        (1 - (b + 1) / arr.length).clamp(0, Number.POSITIVE_INFINITY),
+        (1 - (b + 1) / arr.length).clamp(0, Number.POSITIVE_INFINITY),
+        (1 - (b + 1) / arr.length).clamp(0, Number.POSITIVE_INFINITY)
+      );
+    });
+  }
+
+  init() {
+    this.children.forEach((body, b) => {
+      body.position.set(0, 0, 0);
+      body.rotation.set(...Object.values(this.head.rotation));
+      body.translateZ(1 * (b + 1));
+      this.head.add(body);
+    });
+  }
+
+  update(env, vel) {
+    // for (let b of [...Array(this.children.length-1)].map((_, i) => i)) {
+    //   this.children[b + 1].position.set(...Object.values(this.children[b].position));
+    // }
+    // this.children[0].position.set(...Object.values(this.head.position));
+    // this.children[0].translateZ(0.01);
+  }
+
+}
+
 class Player {
 
   constructor({
@@ -48,11 +104,17 @@ class Player {
     );
 
     this.body = new THREE.Mesh(
-      new THREE.BoxGeometry(this.rad, this.rad, this.rad), // , 48, 48),
+      new THREE.SphereGeometry(this.rad , 48, 48),
       new THREE.MeshPhongMaterial({ color: this.color, wireframe: false})
     );
     this.body.receiveShadow = true;
     this.body.castShadow = true;
+
+    this.tail = new BaseTail({
+      head: this.body,
+      length: 4,
+      fidelity: 10,
+    });
 
     this.controls = {
       forward: () => {
@@ -66,7 +128,7 @@ class Player {
           ? new THREE.Vector3(0, 0, 0)
           : angleFromMouse(
             pos.slice(-1)[0],
-            new THREE.Vector3(0.008, 0.008, 0.008),
+            new THREE.Vector3(0.008, 0.008, 0.012),
           );
       }
     };
@@ -99,6 +161,7 @@ class Player {
       1000
     );
     this.body.add(this.camera);
+    this.tail.init();
 
     this.body.position.set(...Object.values(pos));
     this.body.rotation.set(...Object.values(dir));
@@ -109,15 +172,20 @@ class Player {
     scene.add(this.body);
   }
 
-  update() {
+  update(env) {
     if (this.vel.length() > 0.01) {
-      if (this.acc.z > 0) this.acc.setZ(this.acc.z - )
+      this.acc.add(new THREE.Vector3(
+        env.friction * (this.acc.x > 0 ? -1 : 1),
+        env.friction * (this.acc.y > 0 ? -1 : 1),
+        env.friction * (this.acc.z > 0 ? -1 : 1),
+      ));
     } else this.acc.multiplyScalar(0.0);
     this.vel.add(this.acc);
     this.body.rotateX(this.dvel.x);
     this.body.rotateY(this.dvel.y);
     this.body.rotateZ(this.dvel.z);
     this.body.translateZ(this.vel.z);
+    this.tail.update(env);
   }
 
 }

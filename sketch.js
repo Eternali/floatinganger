@@ -3,6 +3,10 @@ const viewPort = {
   height: window.innerHeight,
 };
 
+const env = {
+  friction: 0.01,
+};
+
 const eventHandler = new EventHandler();
 const manager = new GameManager(
   clock = new THREE.Clock(),
@@ -79,8 +83,8 @@ function draw() {
   // handle any ongoing events
   eventHandler.continuous();
 
-  player1.update();
-  player2.update();
+  player1.update(env);
+  player2.update(env);
 
   manager.render(player1.camera);
 }
