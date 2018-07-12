@@ -48,7 +48,8 @@ class EventHandler {
     this.preventDefaults = preventDefaults;
     this.keyboard = {  };
     this.mouse = {
-      pos: new THREE.Vector2(0, 0),
+      // keep a history of the last 4 mouse positions
+      pos: new Array(4).map((_) => new THREE.Vector2(0, 0)),
       keys: {  },
       onMove: null,
     };
@@ -61,7 +62,7 @@ class EventHandler {
     }
   }
 
-  bind(window, loader) {
+  bind(window, dom, loader) {
     this.constraints.set(window.innerWidth, window.innerHeight);
 
     window.addEventListener('keydown', this.onKeyDown.bind(this));
@@ -69,6 +70,7 @@ class EventHandler {
     window.addEventListener('mousedown', this.onMouseDown.bind(this));
     window.addEventListener('mouseup', this.onMouseUp.bind(this));
     window.addEventListener('mousemove', this.onMouseMove.bind(this));
+    dom.addEventListener('mouseleave', this.onMouseLeave.bind(this));
 
     window.onload = loader;
   }
@@ -128,9 +130,18 @@ class EventHandler {
   onMouseMove(event) {
     if (this.mouse.onMove === null) return;
     this.consumeEvent(event);
-    this.mouse.pos.x = (event.clientX / this.constraints.x) * 2 - 1;
-    this.mouse.pos.y = (event.clientY / this.constraints.y) * 2 + 1;
-    this.mouse.onMove(this.mouse.pos);
+    this.mouse.pos.shift();
+    this.mouse.pos.push(new THREE.Vector2(
+      (event.clientX / this.constraints.x) * 2 - 1,
+      -(event.clientY / this.constraints.y) * 2 + 1,
+    ));
+    this.mouse.onMove(this.mouse.pos, false);
+  }
+
+  onMouseLeave(event) {
+    if (this.mouse.onMove === null) return;
+    this.consumeEvent(event);
+    this.mouse.onMove(this.mouse.pos, true);
   }
 
 }

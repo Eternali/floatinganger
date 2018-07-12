@@ -17,15 +17,15 @@ let bodies = {
     new THREE.PointLight(0xffffff, 1.1, 28),
   ],
   obstacles: [
-    // new THREE.Mesh(
-    //   new THREE.BoxGeometry(1,1,1),
-    //   new THREE.MeshPhongMaterial({ color: 0xffffff, wireframe: false})
-    // )
+    new THREE.Mesh(
+      new THREE.PlaneGeometry(20, 20, 10, 10),
+      new THREE.MeshPhongMaterial({ color: 0xdddddd, wireframe: false})
+    )
   ]
 };
 bodies.lights[0].position.set(0,13,0);
-// bodies.obstacles[0].position.y += 2;
-// bodies.obstacles[0].receiveShadow = true;
+bodies.obstacles[0].rotation.x -= Math.PI / 2;
+bodies.obstacles[0].receiveShadow = true;
 // bodies.obstacles[0].castShadow = true;
 
 const player1 = new Player({
@@ -82,7 +82,7 @@ function draw() {
   player1.update();
   player2.update();
 
-  manager.render(player2.camera);
+  manager.render(player1.camera);
 }
 
-eventHandler.bind(window, setup);
+eventHandler.bind(window, document.body, setup);
