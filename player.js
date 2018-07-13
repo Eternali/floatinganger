@@ -98,7 +98,10 @@ class Player {
     this.tail = new Tail({
       head: this.body,
       length: 100,
-      geometry: [...Array((Math.PI * 2 + Math.PI / 64) / Math.PI / 64)],
+      geometry: (() => {
+        let points = [];
+        
+      })(),
       material: THREE.TrailRenderer.createBaseMaterial(),
     });
 
