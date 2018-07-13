@@ -94,12 +94,11 @@ class BaseTail extends Tail {
   }
 
   update(env, vel) {
-    for (let b of [...Array(this.children.length-1)].map((_, i) => i)) {
+    for (let b = 0; b < this.children.length-1; b++) {
       this.children[b + 1].position.set(...Object.values(this.children[b].position));
     }
-    this.children[0].translateX(vel.x);
-    this.children[0].translateY(vel.y);
-    this.children[0].translateZ(vel.z);
+    this.children[0].position.set(...Object.values(vel));
+    this.children[0].translateZ(this.headOff);
   }
 
 }
