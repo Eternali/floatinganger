@@ -53,10 +53,16 @@ class Tail {
     this.geometry = geometry;
     this.material = material;
   }
-
+  
   init(scene) {
     this.body = new THREE.TrailRenderer(scene, false);
     this.body.initialize(this.material, this.length, false, 0, this.geometry, this.head);
+    this.body.activate();
+  }
+
+  update(delta) {
+    this.body.advance();
+    // this.body.updateHead();
   }
 
 }
@@ -69,6 +75,7 @@ class Player {
     vel = new THREE.Vector3(0, 0, -0.01),
     dvel = new THREE.Vector3(0, 0, 0),
     acc = new THREE.Vector3(0, 0, 0),
+    dacc = new THREE.Vector3(0, 0, 0),
     rad = 1,
   }) {
     this.camera;
@@ -77,6 +84,7 @@ class Player {
     this.vel = vel;
     this.dvel = dvel;
     this.acc = acc;
+    this.dacc = dacc;
     this.rad = rad;
 
     this.vel.clamp(
@@ -95,15 +103,21 @@ class Player {
     this.body.receiveShadow = true;
     this.body.castShadow = true;
 
-    this.tail = new Tail({
-      head: this.body,
-      length: 100,
-      geometry: (() => {
-        let points = [];
-        
-      })(),
-      material: THREE.TrailRenderer.createBaseMaterial(),
-    });
+    // this.tail = new Tail({
+    //   head: this.body,
+    //   length: 2,
+    //   geometry: (() => {
+    //     let points = [];
+    //     let scale = 10.0;
+    //     let inc = Math.PI / 16;
+    //     let idx = 0;
+    //     for (let i = 0; i <= Math.PI * 2 + inc; i += inc) {
+    //       points[idx++] = new THREE.Vector3(Math.cos(i) * scale, Math.sin(i) * scale, 0);
+    //     }
+    //     return points;
+    //   })(),
+    //   material: THREE.TrailRenderer.createBaseMaterial(),
+    // });
 
     this.controls = {
       forward: () => {
@@ -113,12 +127,15 @@ class Player {
         console.log('fire');
       },
       look: (pos, hasLeft) => {
-        this.dvel = hasLeft
-          ? new THREE.Vector3(0, 0, 0)
-          : angleFromMouse(
-            pos.slice(-1)[0],
-            new THREE.Vector3(0.008, 0.008, 0.012),
-          );
+        if (hasLeft) {
+          this.dacc = new THREE.Vector3(0, 0, 0);
+          this.dvel = new THREE.Vector3(0, 0, 0);
+          return;
+        }
+        this.dacc = angleFromMouse(
+          pos.slice(-1)[0],
+          new THREE.Vector3(0.0001, 0.0001, 0.0001),
+        );
       }
     };
   }
@@ -157,11 +174,16 @@ class Player {
     this.camera.position.set(0, 5, 2);
     this.camera.lookAt(new THREE.Vector3(0, 2.1, 0));
     
-    this.tail.init(scene);
+    // this.tail.init(scene);
     scene.add(this.body);
   }
 
   update(env) {
+    this.dvel.add(this.dacc);
+    this.dacc.multiplyScalar(env.friction);
+    this.body.rotateX(this.dvel.x);
+    this.body.rotateY(this.dvel.y);
+    this.body.rotateZ(this.dvel.z);
     if (this.vel.length() > 0.01) {
       this.acc.add(new THREE.Vector3(
         env.friction * (this.acc.x > 0 ? -1 : 1),
@@ -170,11 +192,10 @@ class Player {
       ));
     } else this.acc.multiplyScalar(0.0);
     this.vel.add(this.acc);
-    this.body.rotateX(this.dvel.x);
-    this.body.rotateY(this.dvel.y);
-    this.body.rotateZ(this.dvel.z);
     this.body.translateZ(this.vel.z);
-    // this.tail.update(env, this.vel);
+    this.camera.rotateX(this.dacc.x);
+    this.camera.rotateY(this.dacc.y);
+    this.camera.rotateZ(this.dacc.z);
   }
 
 }
