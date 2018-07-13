@@ -75,7 +75,6 @@ class Player {
     vel = new THREE.Vector3(0, 0, -0.01),
     dvel = new THREE.Vector3(0, 0, 0),
     acc = new THREE.Vector3(0, 0, 0),
-    dacc = new THREE.Vector3(0, 0, 0),
     rad = 1,
   }) {
     this.camera;
@@ -84,7 +83,6 @@ class Player {
     this.vel = vel;
     this.dvel = dvel;
     this.acc = acc;
-    this.dacc = dacc;
     this.rad = rad;
 
     this.vel.clamp(
@@ -127,15 +125,12 @@ class Player {
         console.log('fire');
       },
       look: (pos, hasLeft) => {
-        if (hasLeft) {
-          this.dacc = new THREE.Vector3(0, 0, 0);
-          this.dvel = new THREE.Vector3(0, 0, 0);
-          return;
-        }
-        this.dacc = angleFromMouse(
-          pos.slice(-1)[0],
-          new THREE.Vector3(0.0001, 0.0001, 0.0001),
-        );
+        this.dvel = hasLeft
+          ? new THREE.Vector3(0, 0, 0)
+          : angleFromMouse(
+            pos.slice(-1)[0],
+            new THREE.Vector3(0.008, 0.008, 0.012),
+          );
       }
     };
   }
@@ -179,11 +174,6 @@ class Player {
   }
 
   update(env) {
-    this.dvel.add(this.dacc);
-    this.dacc.multiplyScalar(env.friction);
-    this.body.rotateX(this.dvel.x);
-    this.body.rotateY(this.dvel.y);
-    this.body.rotateZ(this.dvel.z);
     if (this.vel.length() > 0.01) {
       this.acc.add(new THREE.Vector3(
         env.friction * (this.acc.x > 0 ? -1 : 1),
@@ -192,10 +182,13 @@ class Player {
       ));
     } else this.acc.multiplyScalar(0.0);
     this.vel.add(this.acc);
+    this.body.rotateX(this.dvel.x);
+    this.body.rotateY(this.dvel.y);
+    this.body.rotateZ(this.dvel.z);
     this.body.translateZ(this.vel.z);
-    this.camera.rotateX(this.dacc.x);
-    this.camera.rotateY(this.dacc.y);
-    this.camera.rotateZ(this.dacc.z);
+    this.camera.rotateX(this.acc.x);
+    this.camera.rotateY(this.acc.y);
+    this.camera.rotateZ(this.acc.z);
   }
 
 }
