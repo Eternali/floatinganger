@@ -20,14 +20,35 @@ let angleFromMouse = (mouse, sensitivity) => new THREE.Vector3(
   mouse.x * Math.abs(mouse.y) * Math.PI * sensitivity.z,
 );
 
+/**
+ * Generates an array of colors
+ * @param {Number} length  - number of colors in array
+ * @returns An array of length {length}
+ */
+let genRainbow = (length) => {
+  let sinToHex = (i, p) =>
+    (Math.floor(Math.sin(Math.PI / length * 2 * i + p) * 127) + 128).toString(16);
+
+  return [...Array(length)]
+    .map((_, c) => {
+      let red = sinToHex(c, 0);
+      let green = sinToHex(c,  Math.PI * (2 / 3));
+      let blue = sinToHex(c, 2 * Math.PI * (2 / 3));
+
+      return Number.parseInt('0x' + red + green + blue);
+    });
+};
+
 class Tail {
 
   constructor({
     head,
+    headOff,
     length,
     fidelity,
   }) {
     this.head = head;
+    this.headOff = headOff;
     this.length = length;
     this.fidelity = fidelity;
   }
@@ -41,37 +62,44 @@ class BaseTail extends Tail {
 
   constructor({
     head,
+    headOff,
     length,
-    fidelity
+    fidelity,
+    colors,
   }) {
-    super({ head, length, fidelity });
-    this.children = [...Array(this.fidelity)].map((_) => this.head.clone());
+    super({ head, headOff, length, fidelity });
+    this.colors = colors || genRainbow(fidelity);
+    this.children = [...Array(this.fidelity)].map((_, b) => new THREE.Mesh(
+      new THREE.SphereGeometry(0.2, 24, 24),
+      new THREE.MeshPhongMaterial({ color: this.colors[b], wireframe: false})
+    ));
     this.children.forEach((body, b, arr) => {
       body.material.transparent = true;
       // body.material.opacity = 1 - (b / arr);
       body.scale.set(
-        (1 - (b + 1) / arr.length).clamp(0, Number.POSITIVE_INFINITY),
-        (1 - (b + 1) / arr.length).clamp(0, Number.POSITIVE_INFINITY),
-        (1 - (b + 1) / arr.length).clamp(0, Number.POSITIVE_INFINITY)
+        1 - (b + 1) / arr.length,
+        1 - (b + 1) / arr.length,
+        1 - (b + 1) / arr.length
       );
     });
   }
 
   init() {
-    this.children.forEach((body, b) => {
+    this.children.forEach((body, b, arr) => {
       body.position.set(0, 0, 0);
       body.rotation.set(...Object.values(this.head.rotation));
-      body.translateZ(1 * (b + 1));
+      body.translateZ(this.headOff + (b / arr.length) * this.length);
       this.head.add(body);
     });
   }
 
   update(env, vel) {
-    // for (let b of [...Array(this.children.length-1)].map((_, i) => i)) {
-    //   this.children[b + 1].position.set(...Object.values(this.children[b].position));
-    // }
-    // this.children[0].position.set(...Object.values(this.head.position));
-    // this.children[0].translateZ(0.01);
+    for (let b of [...Array(this.children.length-1)].map((_, i) => i)) {
+      this.children[b + 1].position.set(...Object.values(this.children[b].position));
+    }
+    this.children[0].translateX(vel.x);
+    this.children[0].translateY(vel.y);
+    this.children[0].translateZ(vel.z);
   }
 
 }
@@ -104,7 +132,7 @@ class Player {
     );
 
     this.body = new THREE.Mesh(
-      new THREE.SphereGeometry(this.rad , 48, 48),
+      new THREE.SphereGeometry(this.rad, 48, 48),
       new THREE.MeshPhongMaterial({ color: this.color, wireframe: false})
     );
     this.body.receiveShadow = true;
@@ -112,8 +140,9 @@ class Player {
 
     this.tail = new BaseTail({
       head: this.body,
-      length: 4,
-      fidelity: 10,
+      headOff: 1.5,
+      length: 6,
+      fidelity: 12,
     });
 
     this.controls = {
@@ -166,7 +195,7 @@ class Player {
     this.body.position.set(...Object.values(pos));
     this.body.rotation.set(...Object.values(dir));
 
-    this.camera.position.set(0, 3, 1);
+    this.camera.position.set(0, 5, 2);
     this.camera.lookAt(new THREE.Vector3(0, 2.1, 0));
 
     scene.add(this.body);
@@ -185,7 +214,7 @@ class Player {
     this.body.rotateY(this.dvel.y);
     this.body.rotateZ(this.dvel.z);
     this.body.translateZ(this.vel.z);
-    this.tail.update(env);
+    this.tail.update(env, this.vel);
   }
 
 }
