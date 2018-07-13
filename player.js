@@ -43,62 +43,20 @@ class Tail {
 
   constructor({
     head,
-    headOff,
     length,
-    fidelity,
+    geometry,
+    material,
   }) {
+    this.body;
     this.head = head;
-    this.headOff = headOff;
     this.length = length;
-    this.fidelity = fidelity;
+    this.geometry = geometry;
+    this.material = material;
   }
 
-  init() {  }
-  update(env) {  }
-
-}
-
-class BaseTail extends Tail {
-
-  constructor({
-    head,
-    headOff,
-    length,
-    fidelity,
-    colors,
-  }) {
-    super({ head, headOff, length, fidelity });
-    this.colors = colors || genRainbow(fidelity);
-    this.children = [...Array(this.fidelity)].map((_, b) => new THREE.Mesh(
-      new THREE.SphereGeometry(0.2, 24, 24),
-      new THREE.MeshPhongMaterial({ color: this.colors[b], wireframe: false})
-    ));
-    this.children.forEach((body, b, arr) => {
-      body.material.transparent = true;
-      // body.material.opacity = 1 - (b / arr);
-      body.scale.set(
-        1 - (b + 1) / arr.length,
-        1 - (b + 1) / arr.length,
-        1 - (b + 1) / arr.length
-      );
-    });
-  }
-
-  init() {
-    this.children.forEach((body, b, arr) => {
-      body.position.set(0, 0, 0);
-      body.rotation.set(...Object.values(this.head.rotation));
-      body.translateZ(this.headOff + (b / arr.length) * this.length);
-      this.head.add(body);
-    });
-  }
-
-  update(env, vel) {
-    for (let b = 0; b < this.children.length-1; b++) {
-      this.children[b + 1].position.set(...Object.values(this.children[b].position));
-    }
-    this.children[0].position.set(...Object.values(vel));
-    this.children[0].translateZ(this.headOff);
+  init(scene) {
+    this.body = new THREE.TrailRenderer(scene, false);
+    this.body.initialize(this.material, this.length, false, 0, this.geometry, this.head);
   }
 
 }
@@ -137,11 +95,11 @@ class Player {
     this.body.receiveShadow = true;
     this.body.castShadow = true;
 
-    this.tail = new BaseTail({
+    this.tail = new Tail({
       head: this.body,
-      headOff: 1.5,
-      length: 6,
-      fidelity: 12,
+      length: 100,
+      geometry: [...Array((Math.PI * 2 + Math.PI / 64) / Math.PI / 64)],
+      material: THREE.TrailRenderer.createBaseMaterial(),
     });
 
     this.controls = {
@@ -189,14 +147,14 @@ class Player {
       1000
     );
     this.body.add(this.camera);
-    this.tail.init();
-
+    
     this.body.position.set(...Object.values(pos));
     this.body.rotation.set(...Object.values(dir));
-
+    
     this.camera.position.set(0, 5, 2);
     this.camera.lookAt(new THREE.Vector3(0, 2.1, 0));
-
+    
+    this.tail.init(scene);
     scene.add(this.body);
   }
 
@@ -213,7 +171,7 @@ class Player {
     this.body.rotateY(this.dvel.y);
     this.body.rotateZ(this.dvel.z);
     this.body.translateZ(this.vel.z);
-    this.tail.update(env, this.vel);
+    // this.tail.update(env, this.vel);
   }
 
 }
