@@ -12,3 +12,7 @@
 Number.prototype.clamp = function(min, max) {
   return Math.min(Math.max(this, min), max);
 };
+
+Array.prototype.consume = function(idx) {
+  return this[idx];
+}
