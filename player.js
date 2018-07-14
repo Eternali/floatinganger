@@ -39,34 +39,6 @@ let genRainbow = (length) => {
     });
 };
 
-class Tail {
-
-  constructor({
-    head,
-    length,
-    geometry,
-    material,
-  }) {
-    this.body;
-    this.head = head;
-    this.length = length;
-    this.geometry = geometry;
-    this.material = material;
-  }
-  
-  init(scene) {
-    this.body = new THREE.TrailRenderer(scene, false);
-    this.body.initialize(this.material, this.length, false, 0, this.geometry, this.head);
-    this.body.activate();
-  }
-
-  update(delta) {
-    this.body.advance();
-    // this.body.updateHead();
-  }
-
-}
-
 class Player {
 
   constructor({
@@ -101,21 +73,15 @@ class Player {
     this.body.receiveShadow = true;
     this.body.castShadow = true;
 
-    // this.tail = new Tail({
-    //   head: this.body,
-    //   length: 2,
-    //   geometry: (() => {
-    //     let points = [];
-    //     let scale = 10.0;
-    //     let inc = Math.PI / 16;
-    //     let idx = 0;
-    //     for (let i = 0; i <= Math.PI * 2 + inc; i += inc) {
-    //       points[idx++] = new THREE.Vector3(Math.cos(i) * scale, Math.sin(i) * scale, 0);
-    //     }
-    //     return points;
-    //   })(),
-    //   material: THREE.TrailRenderer.createBaseMaterial(),
-    // });
+    this.trail = new Trailer({
+      target: this.body,
+      offset: 0.1,
+      length: 2,
+      quanta: new THREE.Mesh(
+      new THREE.SphereGeometry(0.5, 24, 24),
+      new THREE.MeshPhongMaterial({ color: 0xdddddd, wireframe: false})
+      ),
+    });
 
     this.controls = {
       forward: () => {
@@ -169,7 +135,7 @@ class Player {
     this.camera.position.set(0, 5, 2);
     this.camera.lookAt(new THREE.Vector3(0, 2.1, 0));
     
-    // this.tail.init(scene);
+    this.trail.init(scene);
     scene.add(this.body);
   }
 
@@ -189,6 +155,7 @@ class Player {
     this.camera.rotateX(this.acc.x);
     this.camera.rotateY(this.acc.y);
     this.camera.rotateZ(this.acc.z);
+    this.trail.advance(this.vel);
   }
 
 }
