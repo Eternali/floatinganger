@@ -10,7 +10,7 @@ class Quanta {
 
   move(vel) {
     this.body.translateX(vel.x);
-    this.body.translateY(vel.y;
+    this.body.translateY(vel.y);
     this.body.translateZ(vel.z);
   }
 
@@ -19,7 +19,7 @@ class Quanta {
       pos: this.body.position,
       rot: this.body.rotation,
     });
-    this.body.rotation.set(...Object.values(next.hist[0].pos));
+    this.body.rotation.set(...Object.values(next.hist[0].rot));
     this.body.position.set(...Object.values(next.hist[0].pos));
   }
 

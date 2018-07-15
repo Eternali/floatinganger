@@ -77,9 +77,9 @@ class Player {
       target: this.body,
       offset: 0.1,
       length: 2,
-      quanta: new THREE.Mesh(
-      new THREE.SphereGeometry(0.5, 24, 24),
-      new THREE.MeshPhongMaterial({ color: 0xdddddd, wireframe: false})
+      quantaBody: new THREE.Mesh(
+        new THREE.SphereGeometry(0.5, 24, 24),
+        new THREE.MeshPhongMaterial({ color: 0xdddddd, wireframe: false})
       ),
     });
 
