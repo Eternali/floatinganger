@@ -51,7 +51,6 @@ const player2 = new Player({
 
 function setup() {
   // setup environment
-  bodies.obstacles.push(player2.body);
   manager.addAll(Object.values(bodies));
 
   // player keybindings

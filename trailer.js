@@ -1,77 +1,50 @@
-class Quanta {
-
-  constructor({
-    body,
-    hist,
-  }) {
-    this.body = body;
-    this.hist = hist;
-  }
-
-  move(vel = new THREE.Vector3(0, 0, 0), rot = new THREE.Vector3(0, 0, 0)) {
-    this.hist.push({
-      pos: this.body.position,
-      rot: this.body.rotation,
-    });
-    this.body.translateX(vel.x);
-    this.body.translateY(vel.y);
-    this.body.translateZ(vel.z);
-    this.body.rotateX(rot.x);
-    this.body.rotateY(rot.y);
-    this.body.rotateZ(rot.z);
-  }
-
-  advance(next) {
-    this.hist.push({
-      pos: this.body.position,
-      rot: this.body.rotation,
-    });
-    this.body.rotation.set(...Object.values(next.hist[0].rot));
-    this.body.position.set(...Object.values(next.hist[0].pos));
-  }
-
-}
-
 class Trailer {
 
   constructor({
     target,
     offset,
+    quanta,
+    totalClone = false,
     length,
-    quantaBody,
   }) {
     this.target = target;
+    this.length = length || this.target.hist.length;
     this.offset = offset;
-    this.length = length;
-    this.quantaBody = quantaBody;
-    this.children = [...Array(Math.ceil(this.length / this.offset ))]
-      .map((_) => new Quanta({
-        body: this.quantaBody,
-        hist: [],
-      }));
-    this.children.forEach((child, c, children) => {
-        child.body.material.transparent = true;
-        // child.meterial.opacity = 1 - (c / children.length);
-        child.body.scale.set(
-          1 - (c + 1) / (children.length + 1),
-          1 - (c + 1) / (children.length + 1),
-          1 - (c + 1) / (children.length + 1),
-        );
-      });
-  }
-
-  init(scene) {
-    this.children.forEach((child, c, children) => {
-      child.move(this.target.position, this.target.rotation);
-
-      scene.add(child.body);
+    this.totalClone = totalClone;
+    this.children = [...Array(Math.ceil(this.length / this.offset ))].map((_) => quanta.clone());
+    this.children.forEach((child) => {
+      if (totalClone) {
+        child.material = quanta.material.clone();
+      }
     });
   }
-  advance(vel) {
-    for (let c = 1; c < this.children.length; c++) {
-      this.children[c].advance(this.children[c - 1]);
-    }
-    this.children[0].move(vel);
+
+  setChild(c) {
+    this.children[c].position.set(...Object.values(this.target.hist[c * this.offset]));
+  }
+  
+  init(scene) {
+    this.children.forEach((child, c, children) => {
+      child.receiveShadow = true;
+      child.castShadow = true;
+      child.material.transparent = true;
+      if (this.totalClone) {
+        child.material.opacity = 1 - (c / children.length);
+      }
+      child.scale.set(
+        1 - (c + 1) / (children.length + 1),
+        1 - (c + 1) / (children.length + 1),
+        1 - (c + 1) / (children.length + 1),
+      );
+      // this.setChild(c);
+      scene.add(child);
+    });
+  }
+  
+  advance() {
+    // console.log(this.target.hist[99].z === this.target.hist[50].z);
+    this.children.forEach((_, c) => this.setChild(c));
+    // console.log(this.children[0].position.x == this.target.hist[0].x)
   }
 
 }

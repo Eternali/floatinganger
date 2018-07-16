@@ -56,6 +56,7 @@ class Player {
     this.dvel = dvel;
     this.acc = acc;
     this.rad = rad;
+    this.hist = [...Array(100)].fill(new THREE.Vector3(0, 0, 0));
 
     this.vel.clamp(
       new THREE.Vector3(-2, -2, -2),
@@ -74,12 +75,11 @@ class Player {
     this.body.castShadow = true;
 
     this.trail = new Trailer({
-      target: this.body,
-      offset: 0.1,
-      length: 2,
-      quantaBody: new THREE.Mesh(
-        new THREE.SphereGeometry(0.5, 24, 24),
-        new THREE.MeshPhongMaterial({ color: 0xdddddd, wireframe: false})
+      target: { hist: this.hist },
+      offset: 1,
+      quanta: new THREE.Mesh(
+        new THREE.SphereGeometry(1.1, 24, 24),
+        new THREE.MeshPhongMaterial({ color: 0x00ff00, wireframe: false})
       ),
     });
 
@@ -131,6 +131,7 @@ class Player {
     
     this.body.position.set(...Object.values(pos));
     this.body.rotation.set(...Object.values(dir));
+    this.hist.fill(pos);
     
     this.camera.position.set(0, 5, 2);
     this.camera.lookAt(new THREE.Vector3(0, 2.1, 0));
@@ -148,14 +149,20 @@ class Player {
       ));
     } else this.acc.multiplyScalar(0.0);
     this.vel.add(this.acc);
+    
     this.body.rotateX(this.dvel.x);
     this.body.rotateY(this.dvel.y);
     this.body.rotateZ(this.dvel.z);
     this.body.translateZ(this.vel.z);
+
     this.camera.rotateX(this.acc.x);
     this.camera.rotateY(this.acc.y);
     this.camera.rotateZ(this.acc.z);
-    this.trail.advance(this.vel);
+
+    console.log(this.hist[0] === this.hist.slice(-1)[0]);
+    this.hist.shift();
+    this.hist.push(this.body.position);
+    this.trail.advance();
   }
 
 }
