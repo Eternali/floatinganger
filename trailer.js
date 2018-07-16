@@ -8,10 +8,17 @@ class Quanta {
     this.hist = hist;
   }
 
-  move(vel) {
+  move(vel = new THREE.Vector3(0, 0, 0), rot = new THREE.Vector3(0, 0, 0)) {
+    this.hist.push({
+      pos: this.body.position,
+      rot: this.body.rotation,
+    });
     this.body.translateX(vel.x);
     this.body.translateY(vel.y);
     this.body.translateZ(vel.z);
+    this.body.rotateX(rot.x);
+    this.body.rotateY(rot.y);
+    this.body.rotateZ(rot.z);
   }
 
   advance(next) {
@@ -55,8 +62,7 @@ class Trailer {
 
   init(scene) {
     this.children.forEach((child, c, children) => {
-      child.body.position.set(...Object.values(this.target.position));
-      child.body.rotation.set(...Object.values(this.target.rotation));
+      child.move(this.target.position, this.target.rotation);
 
       scene.add(child.body);
     });
