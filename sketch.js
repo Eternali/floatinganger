@@ -83,7 +83,7 @@ function draw() {
   eventHandler.continuous();
 
   player1.update(env);
-  // player2.update(env);
+  player2.update(env);
 
   manager.render(player1.camera);
 }

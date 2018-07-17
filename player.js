@@ -20,25 +20,6 @@ let angleFromMouse = (mouse, sensitivity) => new THREE.Vector3(
   mouse.x * Math.abs(mouse.y) * Math.PI * sensitivity.z,
 );
 
-/**
- * Generates an array of colors
- * @param {Number} length  - number of colors in array
- * @returns An array of length {length}
- */
-let genRainbow = (length) => {
-  let sinToHex = (i, p) =>
-    (Math.floor(Math.sin(Math.PI / length * 2 * i + p) * 127) + 128).toString(16);
-
-  return [...Array(length)]
-    .map((_, c) => {
-      let red = sinToHex(c, 0);
-      let green = sinToHex(c,  Math.PI * (2 / 3));
-      let blue = sinToHex(c, 2 * Math.PI * (2 / 3));
-
-      return Number.parseInt('0x' + red + green + blue);
-    });
-};
-
 class Player {
 
   constructor({
@@ -77,6 +58,7 @@ class Player {
     this.trail = new Trailer({
       target: { hist: this.hist },
       offset: 1,
+      totalClone: true,
       quanta: new THREE.Mesh(
         new THREE.SphereGeometry(0.5, 24, 24),
         new THREE.MeshPhongMaterial({ color: 0x00ff00, wireframe: false})

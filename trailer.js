@@ -12,11 +12,16 @@ class Trailer {
     this.offset = offset;
     this.totalClone = totalClone;
     this.children = [...Array(Math.ceil(this.length / this.offset ))].map((_) => quanta.clone());
-    this.children.forEach((child) => {
-      if (totalClone) {
+
+    // in order for each child to have its own color, the materials need to be independant,
+    // thus the base body must be cloned.
+    if (totalClone) {
+      let rainbow = new Rainbow(this.length);
+      this.children.forEach((child, c) => {
         child.material = quanta.material.clone();
-      }
-    });
+        child.material.color.setHex(rainbow.rainbow[c]);
+      });
+    }
   }
 
   setChild(c) {
