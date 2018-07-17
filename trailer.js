@@ -16,10 +16,13 @@ class Trailer {
     // in order for each child to have its own color, the materials need to be independant,
     // thus the base body must be cloned.
     if (totalClone) {
-      let rainbow = new Rainbow(this.length);
+      let rainbow = new Rainbow(Math.floor(this.length / 2));
+      let round = 1;
       this.children.forEach((child, c) => {
         child.material = quanta.material.clone();
-        child.material.color.setHex(rainbow.rainbow[c]);
+        child.material.color.setHex(rainbow.rainbow[
+          c >= rainbow.length ? Math.floor(c / 2) : c
+        ]);
       });
     }
   }

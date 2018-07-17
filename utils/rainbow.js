@@ -33,9 +33,9 @@ class Rainbow {
         break;
     }
 
-    color = color.map((c) => c * this.maxRGB);
+    color = color.map((c) => (c * this.maxRGB).toString(16).padStart(2, '0'));
     color.unshift('0x');
-    return color.join('');
+    return Number.parseInt(color.join(''), 16);
   }
 
 }

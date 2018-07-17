@@ -15,6 +15,7 @@ const manager = new GameManager(
   scene = new THREE.Scene()
 );
 
+let rainbow = new Rainbow(6).rainbow;
 let bodies = {
   ambientLight: new THREE.AmbientLight(0xffffff, 0.6),
   lights: [
@@ -23,7 +24,7 @@ let bodies = {
   obstacles: [
     new THREE.Mesh(
       new THREE.PlaneGeometry(20, 20, 10, 10),
-      new THREE.MeshPhongMaterial({ color: 0xdddddd, wireframe: false})
+      new THREE.MeshPhongMaterial({ color: rainbow[0], wireframe: false})
     )
   ]
 };
