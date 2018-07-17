@@ -56,13 +56,19 @@ class Player {
     this.body.castShadow = true;
 
     this.trail = new Trailer({
-      target: { hist: this.hist },
-      offset: 1,
-      totalClone: true,
+      target: {
+        hist: this.hist,
+        offset: 0,
+        spacing: 30,
+      },
       quanta: new THREE.Mesh(
-        new THREE.SphereGeometry(0.5, 24, 24),
+        new THREE.SphereGeometry(0.1, 24, 24),
         new THREE.MeshPhongMaterial({ color: 0x00ff00, wireframe: false})
       ),
+      cloneOptions: {
+        colors: [],
+      },
+      taper: false,
     });
 
     this.controls = {
