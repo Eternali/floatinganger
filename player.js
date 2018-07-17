@@ -56,7 +56,7 @@ class Player {
     this.dvel = dvel;
     this.acc = acc;
     this.rad = rad;
-    this.hist = [...Array(100)].fill(new THREE.Vector3(0, 0, 0));
+    this.hist = [...Array(300)].fill(new THREE.Vector3(0, 0, 0));
 
     this.vel.clamp(
       new THREE.Vector3(-2, -2, -2),
@@ -78,7 +78,7 @@ class Player {
       target: { hist: this.hist },
       offset: 1,
       quanta: new THREE.Mesh(
-        new THREE.SphereGeometry(1.1, 24, 24),
+        new THREE.SphereGeometry(0.5, 24, 24),
         new THREE.MeshPhongMaterial({ color: 0x00ff00, wireframe: false})
       ),
     });
@@ -131,7 +131,7 @@ class Player {
     
     this.body.position.set(...Object.values(pos));
     this.body.rotation.set(...Object.values(dir));
-    this.hist.fill(pos);
+    this.hist.fill(pos.clone());
     
     this.camera.position.set(0, 5, 2);
     this.camera.lookAt(new THREE.Vector3(0, 2.1, 0));
@@ -159,9 +159,8 @@ class Player {
     this.camera.rotateY(this.acc.y);
     this.camera.rotateZ(this.acc.z);
 
-    console.log(this.hist[0] === this.hist.slice(-1)[0]);
     this.hist.shift();
-    this.hist.push(this.body.position);
+    this.hist.push(this.body.position.clone());
     this.trail.advance();
   }
 

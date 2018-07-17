@@ -31,20 +31,18 @@ class Trailer {
       if (this.totalClone) {
         child.material.opacity = 1 - (c / children.length);
       }
-      child.scale.set(
-        1 - (c + 1) / (children.length + 1),
-        1 - (c + 1) / (children.length + 1),
-        1 - (c + 1) / (children.length + 1),
-      );
+      // child.scale.set(
+      //   1 - (c + 1) / (children.length + 1),
+      //   1 - (c + 1) / (children.length + 1),
+      //   1 - (c + 1) / (children.length + 1),
+      // );
       // this.setChild(c);
       scene.add(child);
     });
   }
   
   advance() {
-    // console.log(this.target.hist[99].z === this.target.hist[50].z);
     this.children.forEach((_, c) => this.setChild(c));
-    // console.log(this.children[0].position.x == this.target.hist[0].x)
   }
 
 }
