@@ -2,7 +2,6 @@ class Trailer {
 
   constructor({
     target,
-    offset,
     quanta,
     totalClone = false,
     length,
@@ -39,12 +38,11 @@ class Trailer {
       if (this.totalClone) {
         child.material.opacity = 1 - (c / children.length);
       }
-      // child.scale.set(
-      //   1 - (c + 1) / (children.length + 1),
-      //   1 - (c + 1) / (children.length + 1),
-      //   1 - (c + 1) / (children.length + 1),
-      // );
-      // this.setChild(c);
+      child.scale.set(
+        (c + 1) / (children.length + 1),
+        (c + 1) / (children.length + 1),
+        (c + 1) / (children.length + 1),
+      );
       scene.add(child);
     });
   }

@@ -1,3 +1,5 @@
+const stats = new Stats();
+
 const viewPort = {
   width: window.innerWidth,
   height: window.innerHeight,
@@ -51,6 +53,9 @@ const player2 = new Player({
 });
 
 function setup() {
+  // setup stats
+  stats.showPanel(0);
+  document.body.appendChild(stats.dom);
   // setup environment
   manager.addAll(Object.values(bodies));
 
@@ -78,7 +83,7 @@ function setup() {
 }
 
 function draw() {
-  requestAnimationFrame(draw);
+  stats.begin();
 
   // handle any ongoing events
   eventHandler.continuous();
@@ -87,6 +92,9 @@ function draw() {
   player2.update(env);
 
   manager.render(player1.camera);
+
+  stats.end();
+  requestAnimationFrame(draw);  
 }
 
 eventHandler.bind(window, document.body, setup);
