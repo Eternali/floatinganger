@@ -106,9 +106,9 @@ class TubeTrailer extends Trailer {
   }
 
   advance() {
-    this.geometry.parameters.path.points.map((_, p) => this.target.hist[p]);
+    // this.geometry.parameters.path.points.map((_, p) => this.target.hist[p]);
     this.geometry.copy(new THREE.TubeBufferGeometry(
-      new THREE.CatmullRomCurve3(this.target.hist),
+      new THREE.CatmullRomCurve3(this.target.hist.toSet((p) => (p.x + p.y + p.z) / 3)),
       length, this.rad, 24, true
     ));
     this.geometry.needsUpdate = true;

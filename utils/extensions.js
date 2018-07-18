@@ -12,3 +12,18 @@
 Number.prototype.clamp = function(min, max) {
   return Math.min(Math.max(this, min), max);
 };
+
+/**
+ * Removes all duplicates from an array.
+ * 
+ * @param {Function} getId Function that takes each array item and returns a unique identifier for it
+ * @returns This array with all duplicates removed
+ * @type Array
+ */
+Array.prototype.toSet = function(getId) {
+  let sceen = {  };
+  return this.filter((item) => {
+    let id = getId(item);
+    return id in sceen ? false : sceen[id] = true;
+  });
+}
