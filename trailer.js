@@ -6,15 +6,29 @@ class Trailer {
 
   constructor({
     target = { hist: [], offset: 0, spacing: 1 },
-    quanta,
     length,
-    cloneOptions,
-    taper = true,
   }) {
     this.target = target;
     this.length = length || this.target.hist.length;
+  }
+
+  init(scene) {  }
+  advance() {  }
+}
+
+class DiscreteTrailer extends Trailer {
+
+  constructor({
+    target = { hist: [], offset: 0, spacing: 1 },
+    length,
+    quanta,
+    cloneOptions,
+    taper = true,
+  }) {
+    super({ target, length });
     this.cloneOptions = cloneOptions;
     this.taper = taper;
+
     this.children = [...Array(Math.ceil(this.length / this.target.spacing ))].map((_) => quanta.clone());
 
     // in order for each child to have its own color, the materials need to be independant,
@@ -60,6 +74,44 @@ class Trailer {
   
   advance() {
     this.children.forEach((_, c) => this.setChild(c));
+  }
+
+}
+
+class TubeTrailer extends Trailer {
+
+  constructor({
+    target = { hist: [], offset: 0, spacing: 1 },
+    length,
+    colors = [],
+    rad = 0.2,
+  }) {
+    super({ target, length });
+    this.rad = rad;
+    this.geometry = new THREE.TubeBufferGeometry(
+      new THREE.CatmullRomCurve3(this.target.hist),
+      length, this.rad, 24, true
+    );
+    this.geometry.dynamic = true;
+    this.body = new THREE.Mesh(
+      this.geometry,
+      new THREE.MeshPhongMaterial({ color: colors[0], wireframe: false })
+    );
+  }
+
+  init(scene) {
+    this.body.receiveShadow = true;
+    this.body.castShadow = true;
+    scene.add(this.body);
+  }
+
+  advance() {
+    this.geometry.parameters.path.points.map((_, p) => this.target.hist[p]);
+    this.geometry.copy(new THREE.TubeBufferGeometry(
+      new THREE.CatmullRomCurve3(this.target.hist),
+      length, this.rad, 24, true
+    ));
+    this.geometry.needsUpdate = true;
   }
 
 }

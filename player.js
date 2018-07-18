@@ -74,20 +74,27 @@ class Player {
     this.body.receiveShadow = true;
     this.body.castShadow = true;
 
-    this.trail = new Trailer({
+    // this.trail = new DiscreteTrailer({
+    //   target: {
+    //     hist: this.hist,
+    //     offset: 0,
+    //     spacing: 4,
+    //   },
+    //   quanta: new THREE.Mesh(
+    //     new THREE.SphereGeometry(0.1, 24, 24),
+    //     new THREE.MeshPhongMaterial({ color: 0x00ff00, wireframe: false })
+    //   ),
+    //   cloneOptions: {
+    //     colors: genRainbow(6),
+    //   },
+    //   taper: false,
+    // });
+    this.trail = new TubeTrailer({
       target: {
         hist: this.hist,
         offset: 0,
-        spacing: 4,
       },
-      quanta: new THREE.Mesh(
-        new THREE.SphereGeometry(0.1, 24, 24),
-        new THREE.MeshPhongMaterial({ color: 0x00ff00, wireframe: false})
-      ),
-      cloneOptions: {
-        colors: genRainbow(6),
-      },
-      taper: false,
+      colors: [0xffffff],
     });
 
     this.controls = {
