@@ -24,9 +24,12 @@ class Trailer {
       let round = 1;
       this.children.forEach((child, c) => {
         child.material = quanta.material.clone();
-        child.material.color.setHex(rainbow.rainbow[
-          c >= rainbow.length ? Math.floor(c / 2) : c
-        ]);
+        child.material.opacity = this.cloneOptions.colors.slice(
+          -Math.floor(this.cloneOptions.colors.length / this.length) * c
+        )[0];
+        // child.material.color.setHex(rainbow.rainbow[
+        //   c >= rainbow.length ? Math.floor(c / 2) : c
+        // ]);
       });
     }
   }
@@ -42,7 +45,7 @@ class Trailer {
       child.castShadow = true;
       child.material.transparent = true;
       if (this.cloneOptions) {
-        child.material.opacity = 1 - (c / children.length);
+        child.material.opacity = c / children.length;
       }
       if (this.taper) {
         child.scale.set(
