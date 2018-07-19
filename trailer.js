@@ -41,9 +41,9 @@ class DiscreteTrailer extends Trailer {
         child.material.opacity = this.cloneOptions.colors.slice(
           -Math.floor(this.cloneOptions.colors.length / this.length) * c
         )[0];
-        // child.material.color.setHex(rainbow.rainbow[
-        //   c >= rainbow.length ? Math.floor(c / 2) : c
-        // ]);
+        child.material.color.setHex(rainbow.rainbow[
+          c >= rainbow.length ? Math.floor(c / 2) : c
+        ]);
       });
     }
   }
@@ -88,8 +88,10 @@ class TubeTrailer extends Trailer {
   }) {
     super({ target, length });
     this.rad = rad;
+    this.points = [];
+    this.setPoints();
     this.geometry = new THREE.TubeBufferGeometry(
-      new THREE.CatmullRomCurve3(this.target.hist),
+      new THREE.CatmullRomCurve3(this.points),
       length, this.rad, 24, true
     );
     this.geometry.dynamic = true;
@@ -106,12 +108,17 @@ class TubeTrailer extends Trailer {
   }
 
   advance() {
-    // this.geometry.parameters.path.points.map((_, p) => this.target.hist[p]);
+    this.setPoints();
     this.geometry.copy(new THREE.TubeBufferGeometry(
-      new THREE.CatmullRomCurve3(this.target.hist.toSet((p) => (p.x + p.y + p.z) / 3)),
+      new THREE.CatmullRomCurve3(this.points),
       length, this.rad, 24, true
     ));
     this.geometry.needsUpdate = true;
+  }
+
+  setPoints() {
+    this.points = this.target.hist.toSet((p) => (p.x + p.y + p.z) / 3);
+    if (this.points.length < 2) this.points = this.target.hist.slice(0, 2);
   }
 
 }

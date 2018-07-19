@@ -57,6 +57,7 @@ class Player {
     this.acc = acc;
     this.rad = rad;
     this.hist = [...Array(300)].fill(new THREE.Vector3(0, 0, 0));
+    this.shots = [];
 
     this.vel.clamp(
       new THREE.Vector3(-2, -2, -2),
@@ -74,35 +75,40 @@ class Player {
     this.body.receiveShadow = true;
     this.body.castShadow = true;
 
-    // this.trail = new DiscreteTrailer({
+    this.trail = new DiscreteTrailer({
+      target: {
+        hist: this.hist,
+        offset: 0.2,
+        spacing: 16,
+      },
+      quanta: new THREE.Mesh(
+        new THREE.SphereGeometry(0.4, 24, 24),
+        new THREE.MeshPhongMaterial({ color: 0xaaaaaa, wireframe: false })
+      ),
+      cloneOptions: {
+        colors: genRainbow(6),
+      },
+      taper: true,
+    });
+    // this.trail = new TubeTrailer({
     //   target: {
     //     hist: this.hist,
     //     offset: 0,
-    //     spacing: 4,
     //   },
-    //   quanta: new THREE.Mesh(
-    //     new THREE.SphereGeometry(0.1, 24, 24),
-    //     new THREE.MeshPhongMaterial({ color: 0x00ff00, wireframe: false })
-    //   ),
-    //   cloneOptions: {
-    //     colors: genRainbow(6),
-    //   },
-    //   taper: false,
+    //   colors: [0xffffff],
     // });
-    this.trail = new TubeTrailer({
-      target: {
-        hist: this.hist,
-        offset: 0,
-      },
-      colors: [0xffffff],
-    });
 
     this.controls = {
       forward: () => {
-        this.acc.setZ(-0.1);
+        this.vel.setZ(this.vel.z - 0.001);
       },
-      fire: () => {
-        console.log('fire');
+      fire: (scene) => () => {
+        this.shots.push(new WeaponShot(scene, {
+          color: this.color,
+          speed: this.vel.z * 24,
+          pos: this.body.position,
+          dir: this.body.rotation,
+        }));
       },
       look: (pos, hasLeft) => {
         this.dvel = hasLeft
@@ -135,6 +141,7 @@ class Player {
   }
 
   spawn({ pos, dir, scene, dims }) {
+    this.controls.fire = this.controls.fire(scene);
     this.camera = new THREE.PerspectiveCamera(
       90,
       dims.width / dims.height,
@@ -155,14 +162,9 @@ class Player {
   }
 
   update(env) {
-    if (this.vel.length() > 0.01) {
-      this.acc.add(new THREE.Vector3(
-        env.friction * (this.acc.x > 0 ? -1 : 1),
-        env.friction * (this.acc.y > 0 ? -1 : 1),
-        env.friction * (this.acc.z > 0 ? -1 : 1),
-      ));
-    } else this.acc.multiplyScalar(0.0);
-    this.vel.add(this.acc);
+    if (Math.abs(this.vel.z) > 0.01) {
+      this.vel.multiplyScalar(0.99);
+    }
     
     this.body.rotateX(this.dvel.x);
     this.body.rotateY(this.dvel.y);
@@ -176,6 +178,7 @@ class Player {
     this.hist.shift();
     this.hist.push(this.body.position.clone());
     this.trail.advance();
+    this.shots.filter((shot) => !shot.update(env));
   }
 
 }

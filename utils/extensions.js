@@ -21,9 +21,9 @@ Number.prototype.clamp = function(min, max) {
  * @type Array
  */
 Array.prototype.toSet = function(getId) {
-  let sceen = {  };
+  let seen = {  };
   return this.filter((item) => {
     let id = getId(item);
-    return id in sceen ? false : sceen[id] = true;
+    return id in seen ? false : seen[id] = true;
   });
 }

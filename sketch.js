@@ -59,9 +59,6 @@ function setup() {
   // setup environment
   manager.addAll(Object.values(bodies));
 
-  // player keybindings
-  player1.bindControls(eventHandler);
-  player2.bindControls(eventHandler);
   // spawn players
   player1.spawn({
     pos: new THREE.Vector3(10, 10, 10),
@@ -75,7 +72,10 @@ function setup() {
     scene: manager.scene,
     dims: viewPort,
   });
-
+  // player keybindings
+  player1.bindControls(eventHandler);
+  player2.bindControls(eventHandler);
+  
   // finalize renderer and enter into main game loop
   manager.init(viewPort);
   manager.bind(document.body);
