@@ -99,7 +99,7 @@ class Player {
 
     this.controls = {
       forward: () => {
-        this.acc.setZ(-0.001);
+        this.acc.setZ(-0.1);
       },
       fire: () => {
         console.log('fire');
