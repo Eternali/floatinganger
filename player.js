@@ -53,6 +53,7 @@ class Player {
   constructor({
     color,
     bindings,
+    envSize = { lights = 4, obstacles = 12 },
     firedelay = 100,
     vel = new THREE.Vector3(0, 0, -0.01),
     dvel = new THREE.Vector3(0, 0, 0),
@@ -110,6 +111,10 @@ class Player {
     //   },
     //   colors: [0xffffff],
     // });
+
+    this.envField = Object.keys(envSize).map((itemType) => { itemType });
+    this.lights = [];
+    this.obstacleField = [];
   }
 
   bindControls(handler, scene) {
@@ -155,7 +160,7 @@ class Player {
       handler.registerMouseMove(this.controls.look);
   }
 
-  spawn({ pos, dir, scene, dims }) {
+  spawn({ pos, dir, scene, dims, lightPool, obstaclePool }) {
     this.camera = new THREE.PerspectiveCamera(
       90,
       dims.width / dims.height,
@@ -173,6 +178,8 @@ class Player {
     
     this.trail.init(scene);
     scene.add(this.body);
+
+    this.lights = 
   }
 
   update({ friction, timedelta, obstacles }) {
