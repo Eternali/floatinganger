@@ -202,4 +202,9 @@ class Player {
     return collisions;
   }
 
+  envResized(constraints) {
+    this.camera.aspect = constraints.width / constraints.height;
+    this.camera.updateProjectionMatrix();
+  }
+
 }

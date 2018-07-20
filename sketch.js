@@ -17,22 +17,57 @@ const manager = new GameManager(
   scene = new THREE.Scene()
 );
 
+const lightPool = [
+  new THREE.PointLight(0xffffff, 1.1, 28),
+  new THREE.PointLight(0xffff00, 1.4, 32),
+  new THREE.PointLight(0xffcc66, 0.8, 20),
+];
+const obstaclePool = {
+  asteroid: (size, color, complexity) => {
+    let mesh = new THREE.Mesh(
+      new THREE.BoxGeometry(size, size, size),
+      new THREE.MeshPhongMaterial({ color: color, wireframe: false })
+    );
+    mesh.receiveShadow = true;
+    mesh.castShadow = true;
+
+    return mesh;
+  },
+  star: (size, color) => {
+    let mesh = new THREE.Mesh(
+      new THREE.SphereGeometry(size, size * 32, size * 32),
+      new THREE.MeshPhongMaterial({ color: color, wireframe: false })
+    );
+    mesh.receiveShadow = true;
+    mesh.castShadow = true;
+
+    return mesh;
+  },
+  cloud: (size, color, complexity) => {
+    let mesh = new THREE.Mesh(
+      new THREE.SphereGeometry(size, size * 32, size * 32),
+      new THREE.MeshPhongMaterial({ color: color, wireframe: false })
+    );
+    mesh.receiveShadow = true;
+    mesh.castShadow = true;
+
+    return mesh;
+  },
+};
+
 let bodies = {
   ambientLight: new THREE.AmbientLight(0xffffff, 0.6),
-  lights: [
-    new THREE.PointLight(0xffffff, 1.1, 28),
-  ],
-  obstacles: [
-    new THREE.Mesh(
-      new THREE.PlaneGeometry(20, 20, 10, 10),
-      new THREE.MeshPhongMaterial({ color: rainbow[0], wireframe: false})
-    )
-  ]
+  lights: lightField.map(({ x, y, z }) => {
+    let light = lightPool.takeRandom();
+    light.position.set(x, y, z);
+    return light;
+  }),
+  obstacles: obstacleField.map(({ x, y, z }) => {
+    let obstacle = Object.values(obstaclePool).takeRandom();
+    obstacle.position.set(x, y, z);
+    return obstacle;
+  }),
 };
-bodies.lights[0].position.set(0,13,0);
-bodies.obstacles[0].rotation.x -= Math.PI / 2;
-bodies.obstacles[0].receiveShadow = true;
-// bodies.obstacles[0].castShadow = true;
 
 const player1 = new Player({
   firedelay: 0.2,
@@ -99,4 +134,10 @@ function draw() {
   requestAnimationFrame(draw);  
 }
 
-eventHandler.bind(window, document.body, setup);
+eventHandler.bind(window, document.body, setup, () => {
+  viewPort.width = window.innerWidth;
+  viewPort.height = window.innerHeight;
+  player1.envResized(viewPort);
+  player2.envResized(viewPort);
+  manager.resize(viewPort);
+});

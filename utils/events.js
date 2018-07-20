@@ -67,7 +67,7 @@ class EventHandler {
     }
   }
 
-  bind(window, dom, loader) {
+  bind(window, dom, loader, winResize) {
     this.constraints.set(window.innerWidth, window.innerHeight);
 
     window.addEventListener('keydown', this.onKeyDown.bind(this));
@@ -76,6 +76,7 @@ class EventHandler {
     window.addEventListener('mouseup', this.onMouseUp.bind(this));
     window.addEventListener('mousemove', this.onMouseMove.bind(this));
     dom.addEventListener('mouseleave', this.onMouseLeave.bind(this));
+    window.addEventListener('resize', winResize);
 
     window.onload = loader;
   }

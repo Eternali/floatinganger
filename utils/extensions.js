@@ -27,3 +27,12 @@ Array.prototype.toSet = function(getId) {
     return id in seen ? false : seen[id] = true;
   });
 }
+
+/**
+ * Returns a random item from an array.
+ * 
+ * @returns A value of this array
+ */
+Array.prototype.takeRandom = function() {
+  return this[Math.floor(Math.random() * this.length)];
+}

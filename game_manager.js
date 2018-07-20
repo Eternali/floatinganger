@@ -34,4 +34,8 @@ class GameManager {
     return this.clock.getDelta();
   }
 
+  resize(constraints) {
+    this.renderer.setSize(constraints.width, constraints.height);
+  }
+
 }
