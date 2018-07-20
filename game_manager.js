@@ -30,4 +30,8 @@ class GameManager {
     });
   }
 
+  getFrameTime() {
+    return this.clock.getDelta();
+  }
+
 }

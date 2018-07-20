@@ -34,16 +34,14 @@ class DiscreteTrailer extends Trailer {
     // in order for each child to have its own color, the materials need to be independant,
     // thus the base body must be cloned.
     if (this.cloneOptions) {
-      let rainbow = new Rainbow(Math.floor(this.length / 2));
-      let round = 1;
-      this.children.forEach((child, c) => {
+      let section = 0;
+      this.children.forEach((child, c, children) => {
+        section = c * Math.floor(this.cloneOptions.colors.length / children.length);
         child.material = quanta.material.clone();
         child.material.opacity = this.cloneOptions.colors.slice(
           -Math.floor(this.cloneOptions.colors.length / this.length) * c
         )[0];
-        child.material.color.setHex(rainbow.rainbow[
-          c >= rainbow.length ? Math.floor(c / 2) : c
-        ]);
+        child.material.color.setHex(this.cloneOptions.colors[section]);
       });
     }
   }

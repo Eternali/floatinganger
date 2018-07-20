@@ -21,6 +21,15 @@ let angleFromMouse = (mouse, sensitivity) => new THREE.Vector3(
 );
 
 /**
+ * Calculates the velocity and angle a projectile should be launched at according
+ * to the mouse's position.
+ * @param {Three.Vector2} mouse  - normalized position of the mouse on the screen
+ */
+let targetFromMouse = (mouse) => new THREE.Vector3(
+  
+);
+
+/**
  * Generates an array of colors
  * @param {Number} length  - number of colors in array
  * @returns An array of length {length}
@@ -44,11 +53,14 @@ class Player {
   constructor({
     color,
     bindings,
+    firedelay = 100,
     vel = new THREE.Vector3(0, 0, -0.01),
     dvel = new THREE.Vector3(0, 0, 0),
     acc = new THREE.Vector3(0, 0, 0),
     rad = 1,
   }) {
+    this.firedelay = firedelay;
+    this.sincefire = 0;
     this.camera;
     this.color = color;
     this.bindings = bindings;
@@ -58,6 +70,7 @@ class Player {
     this.rad = rad;
     this.hist = [...Array(300)].fill(new THREE.Vector3(0, 0, 0));
     this.shots = [];
+    this.controls = {};
 
     this.vel.clamp(
       new THREE.Vector3(-2, -2, -2),
@@ -79,14 +92,14 @@ class Player {
       target: {
         hist: this.hist,
         offset: 0.2,
-        spacing: 16,
+        spacing: 12,
       },
       quanta: new THREE.Mesh(
         new THREE.SphereGeometry(0.4, 24, 24),
         new THREE.MeshPhongMaterial({ color: 0xaaaaaa, wireframe: false })
       ),
       cloneOptions: {
-        colors: genRainbow(6),
+        colors: genRainbow(100),
       },
       taper: true,
     });
@@ -97,18 +110,22 @@ class Player {
     //   },
     //   colors: [0xffffff],
     // });
+  }
 
+  bindControls(handler, scene) {
     this.controls = {
       forward: () => {
         this.vel.setZ(this.vel.z - 0.001);
       },
-      fire: (scene) => () => {
+      fire: (_, mouse) => {
+        if (this.firedelay > this.sincefire) return;
         this.shots.push(new WeaponShot(scene, {
           color: this.color,
           speed: this.vel.z * 24,
           pos: this.body.position,
-          dir: this.body.rotation,
+          dir: this.body.rotation, // angleFromMouse(mouse.pos[0], new THREE.Vector3(1, 1, 1)),
         }));
+        this.sincefire = 0;
       },
       look: (pos, hasLeft) => {
         this.dvel = hasLeft
@@ -119,9 +136,7 @@ class Player {
           );
       }
     };
-  }
 
-  bindControls(handler) {
     Object.entries(this.bindings)
       .filter(([_, key]) => typeof key === 'number')
       .forEach(([name, key]) => {
@@ -141,7 +156,6 @@ class Player {
   }
 
   spawn({ pos, dir, scene, dims }) {
-    this.controls.fire = this.controls.fire(scene);
     this.camera = new THREE.PerspectiveCamera(
       90,
       dims.width / dims.height,
@@ -161,9 +175,11 @@ class Player {
     scene.add(this.body);
   }
 
-  update(env) {
+  update({ friction, timedelta, obstacles }) {
+    this.sincefire += timedelta;
+
     if (Math.abs(this.vel.z) > 0.01) {
-      this.vel.multiplyScalar(0.99);
+      this.vel.multiplyScalar(1 - friction);
     }
     
     this.body.rotateX(this.dvel.x);
@@ -178,7 +194,12 @@ class Player {
     this.hist.shift();
     this.hist.push(this.body.position.clone());
     this.trail.advance();
-    this.shots.filter((shot) => !shot.update(env));
+
+    let collisions = this.shots.map((shot) => shot.update(obstacles) !== -1);
+    // -1 is the only value returned if the shot hasn't collided with anything
+    this.shots.filter((_, s) => collisions[s] === -1);
+
+    return collisions;
   }
 
 }

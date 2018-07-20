@@ -41,10 +41,15 @@ class MouseButton {
 
 }
 
+/**
+ * This handles all user interaction through the keyboard and mouse (and any other input
+ * that generates events). Each callback that is registered will receive the keyboard state and
+ * the mouse state as parameters (with the exception of events related to mouse movement).
+ */
 class EventHandler {
 
   constructor(preventDefaults = true) {
-    this.constraints = new THREE.Vector2();
+    this.constraints = new THREE.Vector2(0, 0);
     this.preventDefaults = preventDefaults;
     this.keyboard = {  };
     this.mouse = {
@@ -89,10 +94,10 @@ class EventHandler {
   continuous() {
     Object.values(this.keyboard)
       .filter((key) => key.isPressed && key.whilePressed != null)
-      .forEach((key) => key.whilePressed());
+      .forEach((key) => key.whilePressed(this.keyboard, this.mouse));
     Object.values(this.mouse.keys)
       .filter((key) => key.isPressed && key.whilePressed !== null)
-      .forEach((key) => key.whilePressed());
+      .forEach((key) => key.whilePressed(this.keyboard, this.mouse));
   }
 
   onKeyDown(event) {
@@ -100,7 +105,7 @@ class EventHandler {
     this.consumeEvent(event);
     this.keyboard[event.keyCode].isPressed = true;
     if (this.keyboard[event.keyCode].onDown !== null)
-      this.keyboard[event.keyCode].onDown();
+      this.keyboard[event.keyCode].onDown(this.keyboard, this.mouse);
   }
 
   onKeyUp(event) {
@@ -108,7 +113,7 @@ class EventHandler {
     this.consumeEvent(event);
     this.keyboard[event.keyCode].isPressed = false;
     if (this.keyboard[event.keyCode].onUp !== null)
-      this.keyboard[event.keyCode].onUp();
+      this.keyboard[event.keyCode].onUp(this.keyboard, this.mouse);
   }
 
   onMouseDown(event) {
@@ -116,7 +121,7 @@ class EventHandler {
     this.consumeEvent(event);
     this.mouse.keys[event.button].isPressed = true;
     if (this.mouse.keys[event.button].onDown !== null)
-      this.mouse.keys[event.button].onDown();
+      this.mouse.keys[event.button].onDown(this.keyboard, this.mouse);
   }
 
   onMouseUp(event) {
@@ -124,7 +129,7 @@ class EventHandler {
     this.consumeEvent(event);
     this.mouse.keys[event.button].isPressed = false;
     if (this.mouse.keys[event.button].onUp !== null)
-      this.mouse.keys[event.button].onUp();
+      this.mouse.keys[event.button].onUp(this.keyboard, this.mouse);
   }
 
   onMouseMove(event) {

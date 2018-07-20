@@ -5,9 +5,9 @@ const viewPort = {
   height: window.innerHeight,
 };
 
-const env = {
-  friction: 0.01,
-};
+const friction = 0.01;
+let rainbow = new Rainbow(6).rainbow;
+let timedelta = 0.0;
 
 const eventHandler = new EventHandler();
 const manager = new GameManager(
@@ -17,7 +17,6 @@ const manager = new GameManager(
   scene = new THREE.Scene()
 );
 
-let rainbow = new Rainbow(6).rainbow;
 let bodies = {
   ambientLight: new THREE.AmbientLight(0xffffff, 0.6),
   lights: [
@@ -36,6 +35,7 @@ bodies.obstacles[0].receiveShadow = true;
 // bodies.obstacles[0].castShadow = true;
 
 const player1 = new Player({
+  firedelay: 0.2,
   color: 0xff0000,
   bindings: {
     forward: 87,
@@ -44,6 +44,7 @@ const player1 = new Player({
   },
 });
 const player2 = new Player({
+  firedelay: 0.2,
   color: 0x0000ff,
   bindings: {
     forward: 38,
@@ -73,8 +74,8 @@ function setup() {
     dims: viewPort,
   });
   // player keybindings
-  player1.bindControls(eventHandler);
-  player2.bindControls(eventHandler);
+  player1.bindControls(eventHandler, scene);
+  player2.bindControls(eventHandler, scene);
   
   // finalize renderer and enter into main game loop
   manager.init(viewPort);
@@ -85,11 +86,12 @@ function setup() {
 function draw() {
   stats.begin();
 
+  timedelta = manager.getFrameTime();
   // handle any ongoing events
   eventHandler.continuous();
 
-  player1.update(env);
-  player2.update(env);
+  player1.update({ friction, timedelta, obstacles: [ player2.body ] });
+  player2.update({ friction, timedelta, obstacles: [ player2.body ] });
 
   manager.render(player1.camera);
 
