@@ -53,7 +53,7 @@ class Player {
   constructor({
     color,
     bindings,
-    envSize = { lights = 4, obstacles = 12 },
+    envSize = { lights = [2, 4], obstacles = [10, 14] },
     firedelay = 100,
     vel = new THREE.Vector3(0, 0, -0.01),
     dvel = new THREE.Vector3(0, 0, 0),
@@ -112,6 +112,7 @@ class Player {
     //   colors: [0xffffff],
     // });
 
+    this.envSize = envSize;
     this.envField = Object.keys(envSize).map((itemType) => { itemType });
     this.lights = [];
     this.obstacleField = [];
