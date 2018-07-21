@@ -53,7 +53,7 @@ class Player {
   constructor({
     color,
     bindings,
-    envBounds = [ 10, 40],
+    envBounds = [ 10, 40 ],
     envSize = { lights: [2, 4], obstacles: [10, 14] },
     firedelay = 100,
     vel = new THREE.Vector3(0, 0, -0.01),
@@ -113,6 +113,7 @@ class Player {
     //   colors: [0xffffff],
     // });
 
+    this.envBounds = envBounds;
     this.envSize = envSize;
     this.envField = Object.entries(envSize)
       .reduce((acc, [k, _]) => { acc[k] = []; return acc; }, {});
@@ -161,6 +162,18 @@ class Player {
       handler.registerMouseMove(this.controls.look);
   }
 
+  genEnvItem(item) {
+    item.position.set(
+      Math.floor((Math.random() - 0.5) * 2 * (this.envBounds[1] - this.envBounds[0])) +
+        this.envBounds[0] + this.body.position.x,
+      Math.floor((Math.random() - 0.5) * 2 * (this.envBounds[1] - this.envBounds[0])) +
+        this.envBounds[0] + this.body.position.y,
+      Math.floor((Math.random() - 0.5) * 2 * (this.envBounds[1] - this.envBounds[0])) +
+        this.envBounds[0] + this.body.position.z,
+    );
+    scene.add(item);
+  }
+
   spawn({ pos, dir, scene, dims, envPool }) {
     this.camera = new THREE.PerspectiveCamera(
       90,
@@ -185,7 +198,10 @@ class Player {
     Object.keys(this.envField).forEach((k) => {
       this.envField[k] = [...Array(
         Math.floor(Math.random() * (this.envSize[k][1] - this.envSize[k][0]) + this.envSize[k][0])
-      )].map((_) => envPool[k][Math.floor(Math.random() * envPool[k].length)].clone());
+      )].map((_) => envPool[k][
+        Math.floor(Math.random() * envPool[k].length)
+      ](Math.floor(Math.random() * 2) + 0.1, 0x66ff44, 4).clone())
+      .forEach((e) => this.genEnvItem(e));
     });
   }
 
@@ -196,19 +212,35 @@ class Player {
       this.vel.multiplyScalar(1 - friction);
     }
     
+    // update body movement
     this.body.rotateX(this.dvel.x);
     this.body.rotateY(this.dvel.y);
     this.body.rotateZ(this.dvel.z);
     this.body.translateZ(this.vel.z);
 
+    // update camera movement
     this.camera.rotateX(this.acc.x);
     this.camera.rotateY(this.acc.y);
     this.camera.rotateZ(this.acc.z);
 
+    // update trail movement
     this.hist.shift();
     this.hist.push(this.body.position.clone());
     this.trail.advance();
 
+    // update obstacles in the environment
+    Object.entries(this.envField).forEach((k, v) => {
+      if (Math.sqrt(
+          Math.pow(this.body.position.x - v.position.x, 2) +
+          Math.pow(this.body.position.y - v.position.y, 2) +
+          Math.pow(this.body.position.z - v.position.z, 2)
+        ) > this.envBounds[1]
+      ) {
+        this.envField[k] = this.genEnvItem();
+      }
+    });
+
+    // check collisions
     let collisions = this.shots.map((shot) => shot.update(obstacles) !== -1);
     // -1 is the only value returned if the shot hasn't collided with anything
     this.shots.filter((_, s) => collisions[s] === -1);

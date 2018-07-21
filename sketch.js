@@ -18,12 +18,12 @@ const manager = new GameManager(
 );
 
 const lightPool = [
-  new THREE.PointLight(0xffffff, 1.1, 28),
-  new THREE.PointLight(0xffff00, 1.4, 32),
-  new THREE.PointLight(0xffcc66, 0.8, 20),
+  () => new THREE.PointLight(0xffffff, 1.1, 28),
+  () => new THREE.PointLight(0xffff00, 1.4, 32),
+  () => new THREE.PointLight(0xffcc66, 0.8, 20),
 ];
-const obstaclePool = {
-  asteroid: (size, color, complexity) => {
+const obstaclePool = [
+  (size, color, complexity) => { // asteroid
     let mesh = new THREE.Mesh(
       new THREE.BoxGeometry(size, size, size),
       new THREE.MeshPhongMaterial({ color: color, wireframe: false })
@@ -33,7 +33,7 @@ const obstaclePool = {
 
     return mesh;
   },
-  star: (size, color) => {
+  (size, color) => { // star
     let mesh = new THREE.Mesh(
       new THREE.SphereGeometry(size, size * 32, size * 32),
       new THREE.MeshPhongMaterial({ color: color, wireframe: false })
@@ -43,7 +43,7 @@ const obstaclePool = {
 
     return mesh;
   },
-  cloud: (size, color, complexity) => {
+  (size, color, complexity) => { // cloud
     let mesh = new THREE.Mesh(
       new THREE.SphereGeometry(size, size * 32, size * 32),
       new THREE.MeshPhongMaterial({ color: color, wireframe: false })
@@ -53,20 +53,12 @@ const obstaclePool = {
 
     return mesh;
   },
-};
+];
 
 let bodies = {
   ambientLight: new THREE.AmbientLight(0xffffff, 0.6),
-  lights: lightField.map(({ x, y, z }) => {
-    let light = lightPool.takeRandom();
-    light.position.set(x, y, z);
-    return light;
-  }),
-  obstacles: obstacleField.map(({ x, y, z }) => {
-    let obstacle = Object.values(obstaclePool).takeRandom();
-    obstacle.position.set(x, y, z);
-    return obstacle;
-  }),
+  lights: [  ],
+  obstacles: [  ],
 };
 
 const player1 = new Player({
@@ -101,12 +93,20 @@ function setup() {
     dir: new THREE.Vector3(0, Math.PI / 4, 0),
     scene: manager.scene,
     dims: viewPort,
+    envPool: {
+      lights: lightPool,
+      obstacles: obstaclePool,
+    }
   });
   player2.spawn({
     pos: new THREE.Vector3(0, 0, 0),
     dir: new THREE.Vector3(Math.PI / 4, Math.PI / 4, 0),
     scene: manager.scene,
     dims: viewPort,
+    envPool: {
+      lights: lightPool,
+      obstacles: obstaclePool,
+    }
   });
   // player keybindings
   player1.bindControls(eventHandler, scene);
