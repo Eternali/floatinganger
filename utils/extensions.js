@@ -34,7 +34,7 @@ Array.prototype.toSet = function(getId) {
  * @returns A value of this array
  */
 Array.prototype.takeRandom = function() {
-  return this[Math.floor(Math.random() * this.length)];
+  return this[Math.randomFloor(0, this.length)];
 }
 
 /**
