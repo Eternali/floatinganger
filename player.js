@@ -200,8 +200,7 @@ class Player {
     // and take a random mesh from the pool of possible meshes for the given class of element.
     Object.keys(this.envField).forEach((k) => {
       this.envField[k] = [...Array(Math.randomFloor(...this.envSize[k]))]
-        .map((_) => envPool[k][Math.randomFloor(0, envPool[k].length)]
-          (Math.randomFloor(0, 2) + 0.1, 0x66ff44, 4).clone());
+        .map((_) => envPool[k].takeRandom()(Math.randomFloor(0, 2) + 0.1, 0x66ff44, 4).clone());
       this.envField[k].forEach((el) => this.genEnvItem(el));
     });
   }
@@ -235,7 +234,14 @@ class Player {
         (this.body.position.x - el.position.x) > this.envBounds[1] ||
         (this.body.position.y - el.position.y) > this.envBounds[1] ||
         (this.body.position.z - el.position.z) > this.envBounds[1]
-      ) ? Math.random() > this.envGenFreq[0] ? this.genEnvItem(envPool[ty].takeRandom().clone()) : null : el
+      ) ? Math.random() > this.envGenFreq[0]
+        ? (() => {
+          scene.remove(el);
+          return this.genEnvItem(envPool[ty].takeRandom()(Math.randomFloor(0, 2) + 0.1, 0x66ff44, 4).clone());
+        })() : (() => {
+          scene.remove(el);
+          return null;
+        })() : el
     ).filter((el) => el !== null));
     // if (Math.random() > this.envGenFreq[1]) 
 
