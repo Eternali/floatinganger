@@ -36,3 +36,25 @@ Array.prototype.toSet = function(getId) {
 Array.prototype.takeRandom = function() {
   return this[Math.floor(Math.random() * this.length)];
 }
+
+/**
+ * Returns a random number within a range.
+ * 
+ * @param {Number} min Minimum possible value
+ * @param {Number} max Maximum possible value
+ * @returns A number in the range [min, max]
+ */
+Math.randomIn = function(min, max) {
+  return (this.random() * (max - min)) + min;
+}
+
+/**
+ * A wrapper for Math.randomIn that only returns integers.
+ * 
+ * @param {Number} min Minimum possible value
+ * @param {Number} max Maximum possible value
+ * @returns An integer int the range [min, max]
+ */
+Math.randomFloor = function(min, max) {
+  return this.floor(this.randomIn(min, max));
+}

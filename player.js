@@ -54,6 +54,10 @@ class Player {
     color,
     bindings,
     envBounds = [ 10, 40 ],
+    // The first is the probability that when an item leaves the valid range, a new item will
+    // be generated to replace it, the second is the probability that a new item will be generated
+    // on each render frame, keep in mind the hard limits of [envBounds] will always be respected.
+    envGenFreq = [ 0.99, 0.0001 ],
     envSize = { lights: [2, 4], obstacles: [10, 14] },
     firedelay = 100,
     vel = new THREE.Vector3(0, 0, -0.01),
@@ -114,6 +118,7 @@ class Player {
     // });
 
     this.envBounds = envBounds;
+    this.envGenFreq = envGenFreq;
     this.envSize = envSize;
     this.envField = Object.entries(envSize)
       .reduce((acc, [k, _]) => { acc[k] = []; return acc; }, {});
@@ -164,14 +169,12 @@ class Player {
 
   genEnvItem(item) {
     item.position.set(
-      Math.floor((Math.random() - 0.5) * 2 * (this.envBounds[1] - this.envBounds[0])) +
-        this.envBounds[0] + this.body.position.x,
-      Math.floor((Math.random() - 0.5) * 2 * (this.envBounds[1] - this.envBounds[0])) +
-        this.envBounds[0] + this.body.position.y,
-      Math.floor((Math.random() - 0.5) * 2 * (this.envBounds[1] - this.envBounds[0])) +
-        this.envBounds[0] + this.body.position.z,
+      (Math.random() >= 0.5 ? 1 : -1) * Math.randomIn(...this.envBounds) + this.body.position.x,
+      (Math.random() >= 0.5 ? 1 : -1) * Math.randomIn(...this.envBounds) + this.body.position.y,
+      (Math.random() >= 0.5 ? 1 : -1) * Math.randomIn(...this.envBounds) + this.body.position.z,
     );
     scene.add(item);
+    return item;
   }
 
   spawn({ pos, dir, scene, dims, envPool }) {
@@ -196,16 +199,14 @@ class Player {
     // generate a random number of elements for each class of environmental element
     // and take a random mesh from the pool of possible meshes for the given class of element.
     Object.keys(this.envField).forEach((k) => {
-      this.envField[k] = [...Array(
-        Math.floor(Math.random() * (this.envSize[k][1] - this.envSize[k][0]) + this.envSize[k][0])
-      )].map((_) => envPool[k][
-        Math.floor(Math.random() * envPool[k].length)
-      ](Math.floor(Math.random() * 2) + 0.1, 0x66ff44, 4).clone())
-      .forEach((e) => this.genEnvItem(e));
+      this.envField[k] = [...Array(Math.randomFloor(...this.envSize[k]))]
+        .map((_) => envPool[k][Math.randomFloor(0, envPool[k].length)]
+          (Math.randomFloor(0, 2) + 0.1, 0x66ff44, 4).clone());
+      this.envField[k].forEach((el) => this.genEnvItem(el));
     });
   }
 
-  update({ friction, timedelta, obstacles }) {
+  update({ friction, timedelta, obstacles, envPool }) {
     this.sincefire += timedelta;
 
     if (Math.abs(this.vel.z) > 0.01) {
@@ -229,16 +230,14 @@ class Player {
     this.trail.advance();
 
     // update obstacles in the environment
-    Object.entries(this.envField).forEach((k, v) => {
-      if (Math.sqrt(
-          Math.pow(this.body.position.x - v.position.x, 2) +
-          Math.pow(this.body.position.y - v.position.y, 2) +
-          Math.pow(this.body.position.z - v.position.z, 2)
-        ) > this.envBounds[1]
-      ) {
-        this.envField[k] = this.genEnvItem();
-      }
-    });
+    Object.entries(this.envField).forEach(([ty, els]) => els.map((el) =>
+      (
+        (this.body.position.x - el.position.x) > this.envBounds[1] ||
+        (this.body.position.y - el.position.y) > this.envBounds[1] ||
+        (this.body.position.z - el.position.z) > this.envBounds[1]
+      ) ? Math.random() > this.envGenFreq[0] ? this.genEnvItem(envPool[ty].takeRandom().clone()) : null : el
+    ).filter((el) => el !== null));
+    // if (Math.random() > this.envGenFreq[1]) 
 
     // check collisions
     let collisions = this.shots.map((shot) => shot.update(obstacles) !== -1);

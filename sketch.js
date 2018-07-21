@@ -54,6 +54,10 @@ const obstaclePool = [
     return mesh;
   },
 ];
+let envPool = {
+  lights: lightPool,
+  obstacles: obstaclePool,
+};
 
 let bodies = {
   ambientLight: new THREE.AmbientLight(0xffffff, 0.6),
@@ -93,20 +97,14 @@ function setup() {
     dir: new THREE.Vector3(0, Math.PI / 4, 0),
     scene: manager.scene,
     dims: viewPort,
-    envPool: {
-      lights: lightPool,
-      obstacles: obstaclePool,
-    }
+    envPool,
   });
   player2.spawn({
     pos: new THREE.Vector3(0, 0, 0),
     dir: new THREE.Vector3(Math.PI / 4, Math.PI / 4, 0),
     scene: manager.scene,
     dims: viewPort,
-    envPool: {
-      lights: lightPool,
-      obstacles: obstaclePool,
-    }
+    envPool,
   });
   // player keybindings
   player1.bindControls(eventHandler, scene);
@@ -125,8 +123,8 @@ function draw() {
   // handle any ongoing events
   eventHandler.continuous();
 
-  player1.update({ friction, timedelta, obstacles: [ player2.body ] });
-  player2.update({ friction, timedelta, obstacles: [ player2.body ] });
+  player1.update({ friction, timedelta, obstacles: [ player2.body ], envPool });
+  player2.update({ friction, timedelta, obstacles: [ player2.body ], envPool });
 
   manager.render(player1.camera);
 
