@@ -53,7 +53,8 @@ class Player {
   constructor({
     color,
     bindings,
-    envSize = { lights = [2, 4], obstacles = [10, 14] },
+    envBounds = [ 10, 40],
+    envSize = { lights: [2, 4], obstacles: [10, 14] },
     firedelay = 100,
     vel = new THREE.Vector3(0, 0, -0.01),
     dvel = new THREE.Vector3(0, 0, 0),
@@ -113,9 +114,8 @@ class Player {
     // });
 
     this.envSize = envSize;
-    this.envField = Object.keys(envSize).map((itemType) => { itemType });
-    this.lights = [];
-    this.obstacleField = [];
+    this.envField = Object.entries(envSize)
+      .reduce((acc, [k, _]) => { acc[k] = []; return acc; }, {});
   }
 
   bindControls(handler, scene) {
@@ -161,7 +161,7 @@ class Player {
       handler.registerMouseMove(this.controls.look);
   }
 
-  spawn({ pos, dir, scene, dims, lightPool, obstaclePool }) {
+  spawn({ pos, dir, scene, dims, envPool }) {
     this.camera = new THREE.PerspectiveCamera(
       90,
       dims.width / dims.height,
@@ -180,7 +180,13 @@ class Player {
     this.trail.init(scene);
     scene.add(this.body);
 
-    this.lights = 
+    // generate a random number of elements for each class of environmental element
+    // and take a random mesh from the pool of possible meshes for the given class of element.
+    Object.keys(this.envField).forEach((k) => {
+      this.envField[k] = [...Array(
+        Math.floor(Math.random() * (this.envSize[k][1] - this.envSize[k][0]) + this.envSize[k][0])
+      )].map((_) => envPool[k][Math.floor(Math.random() * envPool[k].length)].clone());
+    });
   }
 
   update({ friction, timedelta, obstacles }) {
