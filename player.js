@@ -231,15 +231,17 @@ class Player {
     // update obstacles in the environment
     Object.entries(this.envField).forEach(([ty, els]) => els.map((el) =>
       (
-        (this.body.position.x - el.position.x) > this.envBounds[1] ||
-        (this.body.position.y - el.position.y) > this.envBounds[1] ||
-        (this.body.position.z - el.position.z) > this.envBounds[1]
-      ) ? Math.random() > this.envGenFreq[0]
+        Math.abs(this.body.position.x - el.position.x) > this.envBounds[1] &&
+        Math.abs(this.body.position.y - el.position.y) > this.envBounds[1] &&
+        Math.abs(this.body.position.z - el.position.z) > this.envBounds[1]
+      ) ? Math.random() <= this.envGenFreq[0]
         ? (() => {
+          console.log(els.length);
           scene.remove(el);
           return this.genEnvItem(envPool[ty].takeRandom()(Math.randomFloor(0, 2) + 0.1, 0x66ff44, 4).clone());
         })() : (() => {
           scene.remove(el);
+          console.log('removing');
           return null;
         })() : el
     ).filter((el) => el !== null));
