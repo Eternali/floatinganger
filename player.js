@@ -167,14 +167,15 @@ class Player {
       handler.registerMouseMove(this.controls.look);
   }
 
-  genEnvItem(item) {
-    item.position.set(
+  genEnvItem(scene, pool) {
+    let el = pool.takeRandom()(Math.randomFloor(0, 2) + 0.1, 0x66ff44, 4); // .clone();
+    el.position.set(
       (Math.random() >= 0.5 ? 1 : -1) * Math.randomIn(...this.envBounds) + this.body.position.x,
       (Math.random() >= 0.5 ? 1 : -1) * Math.randomIn(...this.envBounds) + this.body.position.y,
       (Math.random() >= 0.5 ? 1 : -1) * Math.randomIn(...this.envBounds) + this.body.position.z,
     );
-    scene.add(item);
-    return item;
+    scene.add(el);
+    return el;
   }
 
   spawn({ pos, dir, scene, dims, envPool }) {
@@ -200,8 +201,7 @@ class Player {
     // and take a random mesh from the pool of possible meshes for the given class of element.
     Object.keys(this.envField).forEach((k) => {
       this.envField[k] = [...Array(Math.randomFloor(...this.envSize[k]))]
-        .map((_) => envPool[k].takeRandom()(Math.randomFloor(0, 2) + 0.1, 0x66ff44, 4).clone());
-      this.envField[k].forEach((el) => this.genEnvItem(el));
+        .map((_) => this.genEnvItem(scene, envPool[k]));
     });
   }
 
@@ -238,7 +238,7 @@ class Player {
         ? (() => {
           console.log(els.length);
           scene.remove(el);
-          return this.genEnvItem(envPool[ty].takeRandom()(Math.randomFloor(0, 2) + 0.1, 0x66ff44, 4).clone());
+          return this.genEnvItem(scene, envPool[ty]);
         })() : (() => {
           scene.remove(el);
           console.log('removing');
