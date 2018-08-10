@@ -132,10 +132,11 @@ function draw() {
   requestAnimationFrame(draw);  
 }
 
-eventHandler.bind(window, document.body, setup, () => {
+eventHandler.bind(window, document, document.body, setup, () => {
   viewPort.width = window.innerWidth;
   viewPort.height = window.innerHeight;
   player1.envResized(viewPort);
   player2.envResized(viewPort);
   manager.resize(viewPort);
 });
+eventHandler.trapPointer(document.body);

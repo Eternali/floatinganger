@@ -58,6 +58,7 @@ class EventHandler {
       keys: {  },
       onMove: null,
     };
+    this.canLock = false;
   }
 
   consumeEvent(event) {
@@ -67,8 +68,12 @@ class EventHandler {
     }
   }
 
-  bind(window, dom, loader, winResize) {
+  bind(window, document, dom, loader, winResize) {
     this.constraints.set(window.innerWidth, window.innerHeight);
+
+    this.canLock = 'pointerLockElement' in document ||
+      'mozPointerLockElement' in document ||
+      'webkitPointerLockElement' in document;
 
     window.addEventListener('keydown', this.onKeyDown.bind(this));
     window.addEventListener('keyup', this.onKeyUp.bind(this));
@@ -148,6 +153,26 @@ class EventHandler {
     if (this.mouse.onMove === null) return;
     this.consumeEvent(event);
     this.mouse.onMove(this.mouse.pos, true);
+  }
+
+  trapPointer(element) {    
+    if (this.canLock) {
+      element.requestPointerLock = element.requestPointerLock ||
+        element.mozRequestPointerLock ||
+        element.webkitRequestPointerLock;
+      element.requestPointerLock();
+      return true;
+    } else return false;
+  }
+
+  releasePointer(element) {
+    if (this.canLock) {
+      element.exitPointerLock = element.exitPointerLock ||
+        element.mozExitPointerLock ||
+        element.webkitExitPointerLock;
+      element.exitPointerLock();
+      return true;
+    } else return false;
   }
 
 }
